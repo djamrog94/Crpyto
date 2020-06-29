@@ -1,10 +1,12 @@
 from Data_Gatherer import DataGatherer
 import pandas as pd
 import os
+import importlib
 
 
 FEES = 0.002
 SLIPPAGE = 0.002
+BALANCE = 10_000
 
 
 class Backtester:
@@ -16,25 +18,29 @@ class Backtester:
         self.strategy = strategy
         self.fess = FEES
         self.slip = SLIPPAGE
+        self.data = pd.DataFrame()
 
     def get_data(self):
         self.dg.connect_to_db()
         cmd = f"SELECT * FROM public.{self.pair} WHERE time >= '{self.start}' AND time <= '{self.end}'"
         self.dg.cur.execute(cmd)
         data = self.dg.cur.fetchall()
-        df = pd.DataFrame(data, columns=self.dg.columns)
-        print(df.head())
+        self.data = pd.DataFrame(data, columns=self.dg.columns)
 
     def get_strat(self):
-        if os.path.isfile(f'.strategies/{self.strategy}.py'):
+        if os.path.isfile(f'strategies/{self.strategy}.py'):
             return True
         return False
 
     def back_test(self):
-        import strategies.BasicStrat as bs
-        from Strategy import Strategy
-        Strategy.update()
+        strat_impl = importlib.import_module(f'strategies.{self.strategy}')
+        strat = strat_impl.BasicStrat(BALANCE)
+        for idx, r in enumerate(range(len(self.data))):
+            strat.each_time(self.data.iloc[r], idx)
+            print(f"{idx} / {len(self.data)} completed!")
 
+    def results(self):
+        pass
 
 
 def main():

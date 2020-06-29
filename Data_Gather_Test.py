@@ -26,7 +26,7 @@ class Data_Gatherer_Test(unittest.TestCase):
         self.dg.collect_data('2019-01-01', '2019-01-10')
 
         df = pd.DataFrame(self.dg.data)
-        test = pd.read_csv('test.csv')
+        test = pd.read_csv('data/test.csv')
         pd.testing.assert_frame_equal(df, test)
 
 
