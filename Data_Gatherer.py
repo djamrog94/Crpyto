@@ -8,10 +8,6 @@ from datetime import timezone
 import pytz
 import time
 import pandas as pd
-from matplotlib import style
-import mplfinance as mpf
-
-style.use('ggplot')
 
 UTC_TZ = pytz.timezone('UTC')
 EST_TZ = pytz.timezone('America/New_York')
@@ -21,13 +17,19 @@ class DataGatherer:
     def __init__(self, pair):
         self.k = krakenex.API()
         self.k.load_key('key.txt')
-        self.pair = pair
+        self.pair = pair.upper()
         self.conn = None
         self.cur = None
         self.start, self.end = 0, 0
         self.data = []
         self.engine = ''
         self.columns = ['price', 'volume', 'time', 'BS', 'ML', 'misc']
+
+        with open('db_cred.txt', 'r') as f:
+            creds = f.readlines()
+        self.db_name = creds[0].rstrip()
+        self.username = creds[1].rstrip()
+        self.password = creds[2].rstrip()
 
     def convert_string_to_timestamp(self, date_string):
         dt = datetime.strptime(date_string, '%Y-%m-%d')
@@ -41,16 +43,11 @@ class DataGatherer:
         return datetime.strptime(date, format)
 
     def create_db_engine(self):
-        with open('db_cred.txt', 'r') as f:
-            creds = f.readlines()
-        db_name = creds[0].rstrip()
-        username = creds[1].rstrip()
-        password = creds[2].rstrip()
         port = '5432'
-        return create_engine(f'postgresql+psycopg2://{username}:{password}@localhost:{port}/{db_name}')
+        return create_engine(f'postgresql+psycopg2://{self.username}:{self.password}@localhost:{port}/{self.db_name}')
 
     def connect_to_db(self):
-        self.conn = psycopg2.connect('dbname=Kraken user=postgres password=draftday')
+        self.conn = psycopg2.connect(f'dbname={self.db_name} user={self.username} password={self.password}')
         self.cur = self.conn.cursor()
 
     def collect_data(self, start, end):
@@ -149,12 +146,6 @@ class DataGatherer:
         self.conn.close()
         return ohlc, list(vol)
 
-    def print_candles(self):
-        df, vol = self.convert_tick_data('15')
-        df['Volume'] = vol
-        df = df.rename(columns={'open': 'Open', 'high': 'High', 'low': 'Low', 'close': 'Close'})
-        mpf.plot(df, type='candle', volume=True)
-
 
 def convert_timestamp_to_date(timestamp):
     temp = datetime.fromtimestamp(timestamp)
@@ -232,7 +223,7 @@ def find_time(pair, start, end):
 
 
 def main():
-    pair = input('Pair? ').upper()
+    pair = input('Pair? ')
     dg = DataGatherer(pair)
     first_time = False
     try:
