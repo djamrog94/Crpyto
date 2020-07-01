@@ -1,14 +1,22 @@
 class Strategy:
-    def __init__(self, balance, fees, slippage):
+    def __init__(self, balance):
+        self.position = 0
         self.positions = []
-        self.pending = []
-        self.history = []
         self.balance = balance
-        self.fee_percent = fees
-        self.slippage_percent = slippage
         self.data = []
         self.index = 0
-        self.trade_num = 0
+
+    def each_time(self, row, index):
+        self.data = row
+        self.index = index
+        if self.position != 0:
+            result = self.update()
+            if result:
+                self.liquidate()
+        else:
+            result = self.should_buy()
+            if result:
+                self.go_long()
 
     def get_balance(self):
         return self.balance
@@ -22,53 +30,43 @@ class Strategy:
     def update(self):
         pass
 
-    def calc_fees(self, price):
-        return price * self.fee_percent
+    def go_long(self):
+        pass
 
-    def calc_slippage(self, price):
-        return price * self.slippage_percent
+    def liquidate(self):
+        amount = -self.position
+        self.make_trade("LIQUIDATE", "SHORT", "MARKET", amount)
+        self.position += amount
 
-    def create_record(self, trade_num, side, type, amount, price, fees, slippage, time, closed):
-        return {'index': trade_num,
+    def create_record(self, trade_type, side, type, amount, time, price):
+        """
+
+        :param trade_type:
+        :param side:
+        :param type:
+        :param amount:
+        :param time:
+        :param price:
+        :return:
+        """
+        return {'trade_type': trade_type,
                 'side': side,
-                'type': type,
+                'order_type': type,
                 'amount': amount,
+                'time': time,
                 'price': price,
-                'fees': fees,
-                'slippage': slippage,
-                'time_opened': time,
-                'pos_closed': [closed]
                 }
 
-    def go_long(self, amount):
-        self.positions.append(self.create_record(self.trade_num,
-                                                 "LONG",
-                                                 "MARKET",
+    def make_trade(self, trade_type, side, order_type, amount):
+        self.positions.append(self.create_record(trade_type,
+                                                 side,
+                                                 order_type,
                                                  amount,
-                                                 self.data[0],
-                                                 self.calc_fees(amount * self.data[0]),
-                                                 self.calc_slippage(amount * self.data[0]),
                                                  self.data[2],
-                                                 None))
+                                                 self.data[0],
+                                                 ))
 
-    def liquidate(self, trade_num, time):
-        liquidate_trade = self.positions.pop(trade_num)
-        amount = liquidate_trade['amount']
-        side = liquidate_trade['side']
-        if side == 'LONG':
-            opp = "SHORT"
-        else:
-            opp = "LONG"
-        liquidate_trade['pos_closed'] = self.create_record(trade_num,
-                                                           opp,
-                                                           "MARKET",
-                                                           amount,
-                                                           self.data[0],
-                                                           self.calc_fees(amount * self.data[0]),
-                                                           self.calc_slippage(amount * self.data[0]),
-                                                           time,
-                                                           None)
-        self.history.append(liquidate_trade)
+
 
 
 

@@ -35,7 +35,7 @@ class Backtester:
 
     def back_test(self):
         strat_impl = importlib.import_module(f'strategies.{self.strategy}')
-        strat = strat_impl.BasicStrat(BALANCE, FEES, SLIPPAGE)
+        strat = strat_impl.BasicStrat(BALANCE)
         for idx, r in enumerate(range(len(self.data))):
             strat.each_time(self.data.iloc[r], idx)
             print(f"{idx} / {len(self.data)} completed!")
@@ -56,7 +56,7 @@ def main():
     executed_strat = bb.back_test()
     rr = Results(executed_strat)
     print(f"{'*' * 15} Results for: {'*' * 15}")
-    print(f"{'*' * 10} {bb.strategy}! {'*' * 10}")
+    print(f"{'*' * 15} {bb.strategy}! {'*' * 15}")
     print(rr.display())
 
 
