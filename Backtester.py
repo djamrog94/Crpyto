@@ -1,4 +1,5 @@
 from Data_Gatherer import DataGatherer
+from Results import Results
 import pandas as pd
 import os
 import importlib
@@ -34,10 +35,11 @@ class Backtester:
 
     def back_test(self):
         strat_impl = importlib.import_module(f'strategies.{self.strategy}')
-        strat = strat_impl.BasicStrat(BALANCE)
+        strat = strat_impl.BasicStrat(BALANCE, FEES, SLIPPAGE)
         for idx, r in enumerate(range(len(self.data))):
             strat.each_time(self.data.iloc[r], idx)
             print(f"{idx} / {len(self.data)} completed!")
+        return strat
 
     def results(self):
         pass
@@ -51,7 +53,11 @@ def main():
         print("Cannot get historical data for that time period!")
     if not bb.get_strat():
         print("That strategy doesn't exist!")
-    bb.back_test()
+    executed_strat = bb.back_test()
+    rr = Results(executed_strat)
+    print(f"{'*' * 15} Results for: {'*' * 15}")
+    print(f"{'*' * 10} {bb.strategy}! {'*' * 10}")
+    print(rr.display())
 
 
 if __name__ == '__main__':

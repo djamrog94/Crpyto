@@ -23,5 +23,5 @@ class BasicStrat(Strategy):
 
     def update(self):
         if self.index % 15_000 == 0:
-            self.go_short(self.balance / 1000)
+            self.liquidate(0, self.data[2])
 
