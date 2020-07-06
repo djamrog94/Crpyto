@@ -3,6 +3,7 @@ from Results import Results
 import pandas as pd
 import os
 import importlib
+from matplotlib import pyplot as plt
 
 
 FEES = 0.002
@@ -35,7 +36,7 @@ class Backtester:
 
     def back_test(self):
         strat_impl = importlib.import_module(f'strategies.{self.strategy}')
-        strat = strat_impl.BasicStrat(BALANCE)
+        strat = strat_impl.myStrategy(BALANCE)
         for idx, r in enumerate(range(len(self.data))):
             strat.each_time(self.data.iloc[r], idx)
             print(f"{idx} / {len(self.data)} completed!")
@@ -46,7 +47,7 @@ class Backtester:
 
 
 def main():
-    bb = Backtester("2020-06-02", "2020-06-04", "ethusd", 'BasicStrat')
+    bb = Backtester("2020-06-02", "2020-06-14", "ethusd", 'BasicStrat')
     try:
         bb.get_data()
     except:
@@ -58,6 +59,8 @@ def main():
     print(f"{'*' * 15} Results for: {'*' * 15}")
     print(f"{'*' * 15} {bb.strategy}! {'*' * 15}")
     print(rr.display())
+    plt.plot(rr.get_equity_curve())
+    plt.show()
 
 
 if __name__ == '__main__':

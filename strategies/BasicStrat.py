@@ -1,7 +1,7 @@
 from strategies.Strategy import Strategy
 
 
-class BasicStrat(Strategy):
+class myStrategy(Strategy):
     def __init__(self, balance):
         super().__init__(balance)
 
@@ -14,9 +14,10 @@ class BasicStrat(Strategy):
             return True
 
     def go_long(self):
-        amount = self.balance / 100
-        self.make_trade("OPEN", "LONG", "MARKET", amount)
-        self.position += amount
+        dollar_amount = self.balance / 100
+        share_amount = self.dollar_to_share(dollar_amount)
+        self.make_trade("OPEN", "LONG", "MARKET", share_amount)
+        self.position += share_amount
 
 
 

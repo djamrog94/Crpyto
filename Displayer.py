@@ -12,8 +12,10 @@ class Displayer:
         df, vol = self.dg.convert_tick_data(self.time)
         df['Volume'] = vol
         df = df.rename(columns={'open': 'Open', 'high': 'High', 'low': 'Low', 'close': 'Close'})
-        mpf.plot(df, type='line', volume=True)
+        mpf.plot(df, type='candle', volume=True)
 
+    def print_line(self, results):
+        mpf.plot(results, type='line', volume=False)
 
 def main():
     time = f"{60*3}"

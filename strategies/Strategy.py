@@ -33,6 +33,12 @@ class Strategy:
     def go_long(self):
         pass
 
+    def dollar_to_share(self, dollar_amount):
+        return dollar_amount / self.data[0]
+
+    def share_to_dollar(self, share_amount):
+        return share_amount * self.data[0]
+
     def liquidate(self):
         amount = -self.position
         self.make_trade("LIQUIDATE", "SHORT", "MARKET", amount)
@@ -44,7 +50,7 @@ class Strategy:
         :param trade_type:
         :param side:
         :param type:
-        :param amount:
+        :param amount: this must be amount in shares!!
         :param time:
         :param price:
         :return:
